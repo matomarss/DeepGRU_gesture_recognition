@@ -40,13 +40,13 @@ class DatasetLeapGestures(Dataset):
 
         # Pre-set 5-fold cross validations from dataset's README
         # FOLD[i] means train on every other fold, test on fold i
-        TESTING_SET=["iveta", "zuzka"]
+        TESTING_SET=["palo", "zuzka", "stefan"]
         FOLDS = [
             ["jano", "janci"],
             ["viktor", "clara"],
-            ["igor", "stefan"],
+            ["igor", "iveta"],
             ["barbora"],
-            ["zdenka", "palo"]
+            ["zdenka"]
         ]
 
         # Number of folds
