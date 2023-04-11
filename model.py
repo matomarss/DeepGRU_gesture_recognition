@@ -30,7 +30,7 @@ class DeepGRU(nn.Module):
         )
 
     def forward(self, x_padded, x_lengths):
-        x_packed = packer(x_padded, x_lengths, batch_first=True)
+        x_packed = packer(x_padded, x_lengths.cpu(), batch_first=True)
 
         # Encode
         output, _ = self.gru1(x_packed)

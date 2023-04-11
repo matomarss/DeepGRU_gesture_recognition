@@ -1,3 +1,4 @@
+from dataset.impl.leap_gestures import DatasetLeapGestures
 from dataset.impl.sbu_kinect import DatasetSBUKinect
 
 
@@ -8,7 +9,8 @@ class DataFactory:
     """
     dataset_names = [
             'sbu',
-        ]
+            'leap',
+    ]
 
     @staticmethod
     def instantiate(dataset_name, num_synth):
@@ -21,5 +23,8 @@ class DataFactory:
 
         if dataset_name == "sbu":
             return DatasetSBUKinect(num_synth=num_synth)
+
+        if dataset_name == 'leap':
+            return DatasetLeapGestures(num_synth=num_synth)
 
         raise Exception('Unknown dataset "{}"'.format(dataset_name))
