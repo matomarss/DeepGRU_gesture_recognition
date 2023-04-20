@@ -5,6 +5,7 @@ import time
 import torch
 import torch.nn as nn
 
+from sklearn.metrics import confusion_matrix
 from model import DeepGRU
 from dataset.datafactory import DataFactory
 from utils.average_meter import AverageMeter  # Running average computation
@@ -80,7 +81,7 @@ def run_fold(dataset, fold_idx, use_cuda):
     train_loader, test_loader = dataset.get_data_loaders(fold_idx,
                                                          shuffle=True,
                                                          random_seed=seed+fold_idx,
-                                                         normalize=False)
+                                                         normalize=True)
 
     best_train_accuracy = 0
     best_test_accuracy = 0
@@ -98,7 +99,7 @@ def run_fold(dataset, fold_idx, use_cuda):
             model.train()
             optimizer.zero_grad()
 
-            accuracy, curr_batch_size, loss = run_batch(batch, model, criterion)
+            accuracy, curr_batch_size, loss, _, _ = run_batch(batch, model, criterion)
 
             # Backward and optimize
             loss.backward()
@@ -121,16 +122,21 @@ def run_fold(dataset, fold_idx, use_cuda):
         #
         # Testing loop
         #
+        conf_labels = np.array([])
+        conf_predictions = np.array([])
         model.eval()
         with torch.no_grad():
             test_loss_meter = AverageMeter()
 
             for batch in test_loader:
 
-                accuracy, curr_batch_size, loss = run_batch(batch, model, criterion)
+                accuracy, curr_batch_size, loss, conf_lbs, conf_pds = run_batch(batch, model, criterion)
                 test_loss_meter.update(loss.item(), curr_batch_size)
                 test_meter.update(accuracy, curr_batch_size)
 
+                # Collect predictions and correct labels
+                conf_labels = np.concatenate((conf_labels, conf_lbs.cpu().numpy()), axis=0)
+                conf_predictions = np.concatenate((conf_predictions, conf_pds.cpu().numpy()), axis=0)
             test_accuracy = test_meter.avg
 
             # Update best accuracies
@@ -140,7 +146,7 @@ def run_fold(dataset, fold_idx, use_cuda):
             log('       [Avg Loss]          {loss.avg:.6f}'.format(loss=test_loss_meter))
             log('       [Validation] Prec@1 {top1:.6f} Max {max:.6f}'
                  .format(top1=test_accuracy, max=best_test_accuracy))
-
+            log('Confusion matrix:\n{} '.format(confusion_matrix(conf_labels, conf_predictions)))
         if loss_meter.avg <= 1e-6 or best_test_accuracy == 100:
             break
 
@@ -168,7 +174,7 @@ def run_batch(batch, model, criterion):
     curr_batch_size = labels.size(0)
     accuracy = correct / curr_batch_size * 100.0
 
-    return accuracy, curr_batch_size, loss
+    return accuracy, curr_batch_size, loss, labels, predicted
 
 
 # ----------------------------------------------------------------------------------------------------------------------
