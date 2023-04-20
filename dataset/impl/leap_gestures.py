@@ -7,16 +7,17 @@ from dataset.dataset import Dataset, HyperParameterSet
 from dataset.augmentation import AugRandomScale, AugRandomTranslation
 from dataset.impl.lowlevel import Sample, LowLevelDataset
 from utils.logger import log
-
+from train_network import Seq, Norm
 
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):
     def __init__(self, root="C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/gestures/prepped", num_synth=0,
-                 seq_len=1, pca=None, normalization=None, center_norm=False):
-        self.seq_len = seq_len
+                 pca=None, center_norm=False, seq=Seq.SPARSE):
+        self.dense_seq_len = 20
+        self.sparse_division_num_parts = 5
         self.pca = pca
-        self.normalization = normalization
         self.center_norm = center_norm
+        self.seq = seq
         super(DatasetLeapGestures, self).__init__("LeapGestures", root, num_synth)
 
     def _load_underlying_dataset(self):
@@ -28,7 +29,7 @@ class DatasetLeapGestures(Dataset):
     def get_hyperparameter_set(self):
         return HyperParameterSet(learning_rate=0.001,
                                  batch_size=64,
-                                 weight_decay=0.1,
+                                 weight_decay=0,
                                  num_epochs=15)
 
     def _get_augmenters(self, random_seed):
@@ -38,8 +39,6 @@ class DatasetLeapGestures(Dataset):
         ]
 
     def apply_preprocessing(self, features):
-        if self.normalization is not None:
-            features = self.normalization.fit_transform(features)
         if self.pca is not None:
             self.num_features = self.pca.n_components
             features = self.pca.fit_transform(features)
@@ -48,11 +47,14 @@ class DatasetLeapGestures(Dataset):
         return features
 
     def create_seq_data(self, features):
-        if self.seq_len > len(features):
-            self.seq_len = 1
-            raise Exception('Number of feature vectors ({}) is lower than desired sequence length ({}). '
-                            'Sequence length is set to "1"'.format(len(features), self.seq_len))
-        features = [features[i: i + self.seq_len, :] for i in range(len(features) - self.seq_len + 1)]
+        if self.seq == Seq.DENSE:
+            if self.dense_seq_len > len(features):
+                self.dense_seq_len = 1
+                raise Exception('Number of feature vectors ({}) is lower than desired sequence length ({}). '
+                                'Sequence length is set to "1"'.format(len(features), self.dense_seq_len))
+            features = [features[i: i + self.dense_seq_len, :] for i in range(len(features) - self.dense_seq_len + 1)]
+        elif self.seq == Seq.SPARSE:
+            features = np.array_split(features, self.sparse_division_num_parts)
 
         return features
 
