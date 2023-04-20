@@ -7,7 +7,20 @@ from dataset.dataset import Dataset, HyperParameterSet
 from dataset.augmentation import AugRandomScale, AugRandomTranslation
 from dataset.impl.lowlevel import Sample, LowLevelDataset
 from utils.logger import log
-from train_network import Seq, Norm
+from enum import Enum
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class Norm(Enum):
+    STD = 1
+    MIN_MAX = 2
+    NONE = None
+
+
+class Seq(Enum):
+    SPARSE = 1
+    DENSE = 2
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):

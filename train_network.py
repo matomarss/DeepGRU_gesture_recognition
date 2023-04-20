@@ -2,28 +2,16 @@ import numpy as np
 
 import torch
 
-from enum import Enum
+from dataset.impl.leap_gestures import Seq, Norm
 from dataset.datafactory import DataFactory
 from main import run_fold
 from utils.logger import log                  # Logging
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 # ----------------------------------------------------------------------------------------------------------------------
 seed = 1570254494
 use_cuda = torch.cuda.is_available()
 dataset_name = "leap"
-
-
-class Norm(Enum):
-    STD = 1
-    MIN_MAX = 2
-    NONE = None
-
-
-class Seq(Enum):
-    SPARSE = 1
-    DENSE = 2
 
 # ----------------------------------------------------------------------------------------------------------------------
 def main():
