@@ -1,3 +1,4 @@
+import math
 import os
 from pathlib import Path
 import numpy as np
@@ -11,31 +12,23 @@ from enum import Enum
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class Norm(Enum):
+class Scaling(Enum):
     STD = 1
     MIN_MAX = 2
     NONE = None
 
 
-class Seq(Enum):
-    SPARSE = 1
-    DENSE = 2
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):
     def __init__(self, root="C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/gestures/prepped", num_synth=0,
-                 pca=None, center_norm=False, seq=Seq.SPARSE):
-        self.dense_seq_len = 20
+                 center_norm=False):
         self.sparse_division_num_parts = 5
-        self.pca = pca
         self.center_norm = center_norm
-        self.seq = seq
         super(DatasetLeapGestures, self).__init__("LeapGestures", root, num_synth)
 
     def _load_underlying_dataset(self):
         self.underlying_dataset = self._load_leap_gestures_dataset()
-        # self.num_features = 18  # 3D world coordinates joints of two people (15 joints x 3 dimensions).
+        self.num_features = 18  # 3D world coordinates joints of two people (15 joints x 3 dimensions).
                                 # Each row is one person. Every two rows make up one frame.
         self.num_folds = 5      # This dataset has 5 folds
 
@@ -52,22 +45,28 @@ class DatasetLeapGestures(Dataset):
         ]
 
     def apply_preprocessing(self, features):
-        if self.pca is not None:
-            self.num_features = self.pca.n_components
-            features = self.pca.fit_transform(features)
+        if self.center_norm is True:
+            new_features = []
+            for i in range(len(features)):
+                palm_co_x = features[i][0]
+                palm_co_y = features[i][1]
+                palm_co_z = features[i][2]
+                middle_co_x = features[i][9] - palm_co_x
+                middle_co_y = features[i][10] - palm_co_y
+                middle_co_z = features[i][11] - palm_co_z
+                normalizer = math.sqrt(middle_co_x ** 2 + middle_co_y ** 2 + middle_co_z ** 2)
+                new_features.append([features[i][0] / 200, features[i][1] / 200, features[i][2] / 200])
+                for j in range(3, len(features[i]), 3):
+                    new_features[i].append((features[i][j] - palm_co_x) / normalizer)
+                    new_features[i].append((features[i][j + 1] - palm_co_y) / normalizer)
+                    new_features[i].append((features[i][j + 2] - palm_co_z) / normalizer)
+            new_features = np.array(new_features)
+            return new_features
         else:
-            self.num_features = 18
-        return features
+            return features
 
     def create_seq_data(self, features):
-        if self.seq == Seq.DENSE:
-            if self.dense_seq_len > len(features):
-                self.dense_seq_len = 1
-                raise Exception('Number of feature vectors ({}) is lower than desired sequence length ({}). '
-                                'Sequence length is set to "1"'.format(len(features), self.dense_seq_len))
-            features = [features[i: i + self.dense_seq_len, :] for i in range(len(features) - self.dense_seq_len + 1)]
-        elif self.seq == Seq.SPARSE:
-            features = np.array_split(features, self.sparse_division_num_parts)
+        features = np.array_split(features, self.sparse_division_num_parts)
 
         return features
 
