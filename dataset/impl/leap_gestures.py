@@ -8,14 +8,6 @@ from dataset.dataset import Dataset, HyperParameterSet
 from dataset.augmentation import AugRandomScale, AugRandomTranslation
 from dataset.impl.lowlevel import Sample, LowLevelDataset
 from utils.logger import log
-from enum import Enum
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class Scaling(Enum):
-    STD = 1
-    MIN_MAX = 2
-    NONE = None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

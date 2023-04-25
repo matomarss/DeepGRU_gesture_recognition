@@ -61,7 +61,7 @@ def main():
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def run_fold(dataset, fold_idx, use_cuda, normalize=True):
+def run_fold(dataset, fold_idx, use_cuda, scaler=None):
     """
     Trains/tests the model on the given fold
     """
@@ -78,10 +78,8 @@ def run_fold(dataset, fold_idx, use_cuda, normalize=True):
         model = torch.nn.DataParallel(model).cuda()
 
     # Create data loaders
-    train_loader, test_loader = dataset.get_data_loaders(fold_idx,
-                                                         shuffle=True,
-                                                         random_seed=seed+fold_idx,
-                                                         normalize=normalize)
+    train_loader, test_loader = dataset.get_data_loaders(fold_idx, shuffle=True, random_seed=seed + fold_idx,
+                                                         scaler=scaler)
 
     best_train_accuracy = 0
     best_test_accuracy = 0

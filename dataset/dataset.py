@@ -7,7 +7,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import DataLoader
 
 from utils.logger import log
-
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HyperParameterSet:
@@ -131,13 +131,13 @@ class Dataset(data.Dataset):
         """
         raise NotImplementedError
 
-    def get_data_loaders(self, fold_idx, shuffle=True, random_seed=1223, normalize=True):
+    def get_data_loaders(self, fold_idx, shuffle=True, random_seed=1223, scaler=None):
         """
         Returns the torch.nn.data.DataLoader instances for training/testing on this dataset
         """
         batch_size = self.get_hyperparameter_set().batch_size
 
-        train_sampler, test_sampler = self._get_train_test_sampler(fold_idx, shuffle, random_seed, normalize)
+        train_sampler, test_sampler = self._get_train_test_sampler(fold_idx, shuffle, random_seed, scaler)
         train_loader = DataLoader(dataset=self,
                                   sampler=train_sampler,
                                   collate_fn=PadCollate(),
@@ -153,7 +153,7 @@ class Dataset(data.Dataset):
 
         return train_loader, test_loader
 
-    def _get_train_test_sampler(self, fold_idx, shuffle, random_seed=None, normalize=False):
+    def _get_train_test_sampler(self, fold_idx, shuffle, random_seed=None, scaler=None):
         """
         Creates the training/testing samplers for this dataset.
         This function populates self._cache and computes z-score normalization factors (if requested)
@@ -193,7 +193,7 @@ class Dataset(data.Dataset):
             self._cache += [(result, label, False, sample.path)]
             train_indices += [len(self) - 1]
 
-            if normalize:
+            if scaler is not None:
                 aggregate_data.append(pts)
 
             # Generate synthetic samples if needed
@@ -212,7 +212,7 @@ class Dataset(data.Dataset):
 
                             self._cache += [(result, label, True, sample.path)]
 
-                            if normalize:
+                            if scaler is not None:
                                 aggregate_data.append(synth_pts_a)
 
                             # Add the synthetic sample to the training set as well
@@ -233,20 +233,18 @@ class Dataset(data.Dataset):
         if shuffle:
             random.Random(random_seed).shuffle(train_indices)
 
-        # Do appropriate z-score normalization if requested
-        if normalize:
-            # Calculate the mean/stdev
+        # Do appropriate scaling if requested
+        if scaler is not None:
+            # Fit the given scaler to the training data
             aggregate_data = np.concatenate(aggregate_data)
-            avg = np.average(aggregate_data, axis=0)
-            std = np.std(aggregate_data, axis=0, dtype=np.float32)
-            std[std == 0] = 1
+            scaler.fit(aggregate_data)
 
             indices = list(range(len(self)))  # To account for synthetic samples that were added too
 
             for i in indices:
                 sample, label, is_synth, sample_path = self[i]
                 pt = sample.numpy()
-                new_pt = (pt - avg) / std
+                new_pt = scaler.transform(pt)
                 self._cache[i] = (torch.from_numpy(new_pt), label, is_synth, sample_path)
 
         # Do some extremely important sanity checks:
