@@ -19,32 +19,40 @@ def main():
 
     log('----------------Training initialized----------------')
     stage = 1
-    for scaler in [StandardScaler(), MinMaxScaler(), None]:
-        for center_norm in [False, True]:
-                    log('-----Stage {}-----'.format(stage))
-                    log('Evaluated preprocessing: (center-norm: "{}", scaler: "{}", pca: "{}")'
-                        .format(center_norm, scaler, None))
+    for pca in [PCA(n_components=12)
+        #PCA(n_components=8), PCA(n_components=5), PCA(n_components=4),
+                #PCA(n_components=2)
+                ]:
+        for scaler in [StandardScaler()
+                       #MinMaxScaler()
+                       ]:
+            for center_norm in [False
+                                #True
+                                ]:
+                        log('-----Stage {}-----'.format(stage))
+                        log('Evaluated preprocessing: (center-norm: "{}", scaler: "{}", pca: "{}")'
+                            .format(center_norm, scaler, pca))
 
-                    avg_accuracy = train(scaler=scaler, center_norm=center_norm)
+                        avg_accuracy = train(scaler=scaler, center_norm=center_norm, pca=pca)
 
-                    log('')
-                    log('-----------------------------------------------------------------------')
-                    log('Training for stage {} complete!'.format(stage))
-                    log('Evaluated preprocessing is: (center-norm: "{}", scaler: "{}", pca: "{}")'
-                        .format(center_norm, scaler, None))
-                    log('Average accuracy is: {}'.format(avg_accuracy))
-                    log('')
-                    log('')
-                    log('-----------------------------------------------------------------------')
-                    log('-----------------------------------------------------------------------')
+                        log('')
+                        log('-----------------------------------------------------------------------')
+                        log('Training for stage {} complete!'.format(stage))
+                        log('Evaluated preprocessing is: (center-norm: "{}", scaler: "{}", pca: "{}")'
+                            .format(center_norm, scaler, pca))
+                        log('Average accuracy is: {}'.format(avg_accuracy))
+                        log('')
+                        log('')
+                        log('-----------------------------------------------------------------------')
+                        log('-----------------------------------------------------------------------')
 
-                    stage += 1
+                        stage += 1
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def train(num_synth=0, center_norm=False, scaler=None):
+def train(num_synth=0, center_norm=False, scaler=None, pca=None):
     # Load the dataset
-    dataset = DataFactory.instantiate(dataset_name, num_synth, center_norm=center_norm)
+    dataset = DataFactory.instantiate(dataset_name, num_synth, center_norm=center_norm, pca=pca)
     log.log_dataset(dataset)
     log("Random seed: " + str(seed))
     torch.manual_seed(seed)

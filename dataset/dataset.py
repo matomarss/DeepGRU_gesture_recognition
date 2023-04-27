@@ -59,10 +59,11 @@ class Dataset(data.Dataset):
     This is meant to represent types that are closer to PyTorch.
     """
 
-    def __init__(self, name, root, num_synth):
+    def __init__(self, name, root, num_synth, pca=None):
         self.name = name
         self.root = root
         self.num_synth = num_synth
+        self.embedded_pca = pca
 
         # The list that stores all the examples. For training/testing with PyTorch's DataLoader we
         # index into this cache, which contains post-processed (i.e. normalized, augmented, etc) cache
@@ -193,7 +194,7 @@ class Dataset(data.Dataset):
             self._cache += [(result, label, False, sample.path)]
             train_indices += [len(self) - 1]
 
-            if scaler is not None:
+            if scaler is not None or self.embedded_pca is not None:
                 aggregate_data.append(pts)
 
             # Generate synthetic samples if needed
@@ -212,7 +213,7 @@ class Dataset(data.Dataset):
 
                             self._cache += [(result, label, True, sample.path)]
 
-                            if scaler is not None:
+                            if scaler is not None or self.embedded_pca is not None:
                                 aggregate_data.append(synth_pts_a)
 
                             # Add the synthetic sample to the training set as well
@@ -237,7 +238,7 @@ class Dataset(data.Dataset):
         if scaler is not None:
             # Fit the given scaler to the training data
             aggregate_data = np.concatenate(aggregate_data)
-            scaler.fit(aggregate_data)
+            aggregate_data_scaled = scaler.fit_transform(aggregate_data)
 
             indices = list(range(len(self)))  # To account for synthetic samples that were added too
 
@@ -245,6 +246,21 @@ class Dataset(data.Dataset):
                 sample, label, is_synth, sample_path = self[i]
                 pt = sample.numpy()
                 new_pt = scaler.transform(pt)
+                self._cache[i] = (torch.from_numpy(new_pt), label, is_synth, sample_path)
+        else:
+            aggregate_data_scaled = np.concatenate(aggregate_data)
+
+        # Make principal component analysis if embedded in the dataset
+        if self.embedded_pca is not None:
+            # make the PCA on the training data
+            self.embedded_pca.fit(aggregate_data_scaled)
+
+            indices = list(range(len(self)))  # To account for synthetic samples that were added too
+
+            for i in indices:
+                sample, label, is_synth, sample_path = self[i]
+                pt = sample.numpy()
+                new_pt = self.embedded_pca.transform(pt)
                 self._cache[i] = (torch.from_numpy(new_pt), label, is_synth, sample_path)
 
         # Do some extremely important sanity checks:

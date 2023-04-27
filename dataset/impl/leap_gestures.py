@@ -13,15 +13,17 @@ from utils.logger import log
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):
     def __init__(self, root="C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/gestures/prepped", num_synth=0,
-                 center_norm=False):
+                 center_norm=False, pca=None):
         self.sparse_division_num_parts = 5
         self.center_norm = center_norm
-        super(DatasetLeapGestures, self).__init__("LeapGestures", root, num_synth)
+        super(DatasetLeapGestures, self).__init__("LeapGestures", root, num_synth, pca)
 
     def _load_underlying_dataset(self):
         self.underlying_dataset = self._load_leap_gestures_dataset()
-        self.num_features = 18  # 3D world coordinates joints of two people (15 joints x 3 dimensions).
-                                # Each row is one person. Every two rows make up one frame.
+        if self.embedded_pca is None:
+            self.num_features = 18
+        else:
+            self.num_features = self.embedded_pca.n_components
         self.num_folds = 5      # This dataset has 5 folds
 
     def get_hyperparameter_set(self):
