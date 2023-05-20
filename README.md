@@ -1,3 +1,31 @@
+# Gesture Recognition Using Machine Learning: DeepGRU network
+This code was made as part of the bachelor thesis Gesture Recognition Using Machine Learning in 2023 at Comenius University in Bratislava, Slovakia.
+It is a modification of the code for DeepGRU: Deep Gesture Recognition Utility that is licensed under the MIT license: [LICENSE.md](LICENSE.md).
+
+The main files written as part of the thesis are: 
+1. leap_gestures.py - code necessary for loading and handling the leap dataset used
+2. train_network.py - code containing the experiments on combinations of preprocessing
+3. hyperparameter_tuning.py - code containing the experiments on combinations of hyperparameters
+4. results_parsing.py - code for parsing logs into .json
+5. results_visualization.py - code for results visualization
+
+The following files are runnable and were run in order to conduct the experiments for the thesis and generate the results visualization graphs:
+1. train_network.py
+2. hyperparameter_tuning.py
+3. results_parsing.py
+4. results_visualization.py
+
+In order for the above runnable files to work, it is necessary to download the following dataset and set its location path in leap_gestures.py accordingly:
+```
+http://cogsci.dai.fmph.uniba.sk/~kocur/gestures/
+```
+
+The original code for DeepGRU can be found here:
+```
+https://github.com/Maghoumi/DeepGRU.git
+```
+The rest of this text is the original text from the code for DeepGRU: Deep Gesture Recognition Utility...
+
 # DeepGRU: Deep Gesture Recognition Utility
 
 Official PyTorch implementation of [DeepGRU](https://arxiv.org/abs/1810.12514).
