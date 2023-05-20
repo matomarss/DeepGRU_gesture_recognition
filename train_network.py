@@ -70,7 +70,7 @@ def train(num_synth=0, center_norm=False, scaler=None, pca=None):
 
         test_accuracy = run_fold(dataset, fold_idx, use_cuda, scaler)
         accuracies += [test_accuracy]
-l
+
         log('Fold "{}" complete, final accuracy: {}'.format(fold_idx, test_accuracy))
 
     return np.mean(accuracies)
