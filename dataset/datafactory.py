@@ -13,7 +13,7 @@ class DataFactory:
     ]
 
     @staticmethod
-    def instantiate(dataset_name, num_synth, center_norm=False, pca=None):
+    def instantiate(dataset_name, num_synth, center_norm=False, pca=None, lr=0.001, wd=0):
         """
         Instantiates a dataset with its name
         """
@@ -25,6 +25,6 @@ class DataFactory:
             return DatasetSBUKinect(num_synth=num_synth)
 
         if dataset_name == 'leap':
-            return DatasetLeapGestures(num_synth=num_synth, center_norm=center_norm, pca=pca)
+            return DatasetLeapGestures(num_synth=num_synth, center_norm=center_norm, pca=pca, learning_rate=lr, weight_decay=wd)
 
         raise Exception('Unknown dataset "{}"'.format(dataset_name))

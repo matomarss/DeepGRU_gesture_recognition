@@ -13,9 +13,11 @@ from utils.logger import log
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):
     def __init__(self, root="C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/gestures/prepped", num_synth=0,
-                 center_norm=False, pca=None):
+                 center_norm=False, pca=None, learning_rate=0.001, weight_decay=0):
         self.sparse_division_num_parts = 5
         self.center_norm = center_norm
+        self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
         super(DatasetLeapGestures, self).__init__("LeapGestures", root, num_synth, pca)
 
     def _load_underlying_dataset(self):
@@ -27,9 +29,9 @@ class DatasetLeapGestures(Dataset):
         self.num_folds = 5      # This dataset has 5 folds
 
     def get_hyperparameter_set(self):
-        return HyperParameterSet(learning_rate=0.001,
+        return HyperParameterSet(learning_rate=self.learning_rate,
                                  batch_size=64,
-                                 weight_decay=0,
+                                 weight_decay=self.weight_decay,
                                  num_epochs=15)
 
     def _get_augmenters(self, random_seed):
