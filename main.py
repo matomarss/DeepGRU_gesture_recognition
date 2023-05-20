@@ -132,7 +132,7 @@ def run_fold(dataset, fold_idx, use_cuda, scaler=None):
                 test_loss_meter.update(loss.item(), curr_batch_size)
                 test_meter.update(accuracy, curr_batch_size)
 
-                # Collect predictions and correct labels
+                # Collect predictions and correct labels for confusion matrix
                 conf_labels = np.concatenate((conf_labels, conf_lbs.cpu().numpy()), axis=0)
                 conf_predictions = np.concatenate((conf_predictions, conf_pds.cpu().numpy()), axis=0)
             test_accuracy = test_meter.avg

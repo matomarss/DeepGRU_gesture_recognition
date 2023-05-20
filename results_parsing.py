@@ -16,6 +16,9 @@ def load_from_json(path, filename):
 
 
 def parse(path, pca_scan):
+    """
+        Parse the experiments results from the logs into a .json file
+    """
     print("Parsing....")
 
     parameter_line = "Evaluated preprocessing is"
@@ -83,14 +86,14 @@ def parse(path, pca_scan):
                 json_dic[pca].append(data)
 
     if pca_scan:
-        filename = "PCA"
+        filename = "PCA2"
     else:
-        filename = "NO_PCA"
-    dump_to_json("C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/neural_nets/DeepGRU_gesture_recognition/results", filename, json_dic)
+        filename = "NO_PCA2"
+    dump_to_json("results", filename, json_dic)
 
 
 def main():
-    path = "C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/neural_nets/DeepGRU_gesture_recognition/logs"
+    path = "logs"
     filename = "modifi.txt"
     path = os.path.join(path, filename)
 

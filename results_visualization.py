@@ -9,7 +9,10 @@ import seaborn as sns
 from results_parsing import load_from_json
 
 
-def load_pca_test_results():
+def load_results():
+    """
+    Load the experiment results data
+    """
     final = {}
 
     direc = "results"
@@ -30,8 +33,11 @@ def load_pca_test_results():
     return final
 
 
-def create_pca_test_graphs():
-    data = load_pca_test_results()
+def create_graphs():
+    """
+    Create graphs for the results
+    """
+    data = load_results()
     for prep in ["None", "center_norm"]:
         x = []
         y_stand = []
@@ -55,9 +61,7 @@ def create_pca_test_graphs():
                             y_minmax.append(rec.get("validation_accuracy")/100)
 
         plt.scatter(x, y_stand, color="orange", label="S použitím PCA a štandardného škálovania")
-        #plt.plot(x, y_stand, color="green", label="With PCA and standard scaler")
         plt.scatter(x, y_minmax, color="green", label="S použitím PCA a min-max škálovania")
-        #plt.plot(x, y_minmax, color="orange", label="With PCA and minmax scaler")
 
         records = data.get(-1)
         for rec in records:
@@ -86,7 +90,7 @@ def create_pca_test_graphs():
 
 
 def main():
-    create_pca_test_graphs()
+    create_graphs()
 
 
 if __name__ == '__main__':

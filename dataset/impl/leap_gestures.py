@@ -12,9 +12,13 @@ from utils.logger import log
 
 # ----------------------------------------------------------------------------------------------------------------------
 class DatasetLeapGestures(Dataset):
+    """
+        Class that manipulates with the dataset recorded by LMC
+    """
+    # As root you should put the location of the dataset on your device
     def __init__(self, root="C:/Users/matom/OneDrive/Počítač/skola3/gestures_recognition/gestures/prepped", num_synth=0,
                  center_norm=False, pca=None, learning_rate=0.001, weight_decay=0):
-        self.sparse_division_num_parts = 5
+        self.sparse_division_num_parts = 5  # One recording is divided into 5 continuous subsequences of frames
         self.center_norm = center_norm
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
@@ -22,6 +26,8 @@ class DatasetLeapGestures(Dataset):
 
     def _load_underlying_dataset(self):
         self.underlying_dataset = self._load_leap_gestures_dataset()
+
+        # set the number of features of one feature vector (frame)
         if self.embedded_pca is None:
             self.num_features = 18
         else:
@@ -41,6 +47,9 @@ class DatasetLeapGestures(Dataset):
         ]
 
     def apply_preprocessing(self, features):
+        """
+                Implementation of the center-norm preprocessing
+        """
         if self.center_norm is True:
             new_features = []
             for i in range(len(features)):
@@ -62,18 +71,20 @@ class DatasetLeapGestures(Dataset):
             return features
 
     def create_seq_data(self, features):
+        """
+            Divide each recording into "self.sparse_division_num_parts" following subsequences
+        """
         features = np.array_split(features, self.sparse_division_num_parts)
 
         return features
 
     def _load_leap_gestures_dataset(self, unnormalize=True, verbose=False):
         """
-        Loads the SBU Kinect Interactions dataset. We unnormalize the raw data using the equations
-        that are provided in the dataset's documentation.
+        Loads the dataset of gestures recorded by LMC.
         """
 
-        # Pre-set 5-fold cross validations from dataset's README
-        # FOLD[i] means train on every other fold, test on fold i
+        # Split the dataset into the set for 5-fold cross validations and testing set
+        # FOLD[i] means train on every other fold, validate on fold i
         TESTING_SET=["palo", "zuzka", "stefan"]
         FOLDS = [
             ["jano", "janci"],
@@ -86,18 +97,13 @@ class DatasetLeapGestures(Dataset):
         # Number of folds
         FOLD_CNT = len(FOLDS)
 
-        # Number of joints
-        JOINT_CNT = 15
-
-        # Using 5-fold cross validation as the predefined test
-        # (e.g. train[0] test[0] mean test on FOLD[0], train on everything else)
+        # Implementation of 5-fold cross validation
         train_indices = [[] for i in range(FOLD_CNT)]
         test_indices = [[] for i in range(FOLD_CNT)]
         final_test_indices = []
         samples = []
 
         participant_dir = [f for f in os.listdir(self.root)]
-        # once = False
         for participant in participant_dir:
             participant_name = participant.split('_')[1]
             npz_filenames = os.listdir(os.path.join(self.root, participant))
@@ -108,11 +114,7 @@ class DatasetLeapGestures(Dataset):
                 features = data['features']
                 features = self.apply_preprocessing(features)
                 label = npz_filename.split('_')[0]
-                # if not once:
-                #     print(features)
                 for sequence_features in self.create_seq_data(features):
-                    # if not once:
-                    # print(sequence_features)
                     sample = Sample(sequence_features, label, participant_name, path)
                     samples.append(sample)
                     s_idx = len(samples) - 1
@@ -133,7 +135,6 @@ class DatasetLeapGestures(Dataset):
                                     continue
 
                                 train_indices[other_idx].append(s_idx)
-                # once = True
 
         # k-fold sanity check
         for fold_idx in range(FOLD_CNT):

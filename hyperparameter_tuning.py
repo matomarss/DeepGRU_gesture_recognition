@@ -15,6 +15,9 @@ dataset_name = "leap"
 
 # ----------------------------------------------------------------------------------------------------------------------
 def main():
+    """
+        Conduct experiments on combinations of learning_rate and weight_decay using GridSearch method
+    """
     log.set_dataset_name(dataset_name)
 
     log('----------------Training initialized----------------')

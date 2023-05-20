@@ -35,6 +35,9 @@ def log_and_train(stage, scaler, center_norm, pca):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def main():
+    """
+        Conduct experiments on combinations of preprocessing using GridSearch method
+    """
     log.set_dataset_name(dataset_name)
 
     log('----------------Training initialized----------------')
