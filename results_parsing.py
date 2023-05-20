@@ -86,9 +86,9 @@ def parse(path, pca_scan):
                 json_dic[pca].append(data)
 
     if pca_scan:
-        filename = "PCA2"
+        filename = "PCA"
     else:
-        filename = "NO_PCA2"
+        filename = "NO_PCA"
     dump_to_json("results", filename, json_dic)
 
 
