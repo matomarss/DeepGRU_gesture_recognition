@@ -50,9 +50,9 @@ def create_pca_test_graphs():
                 for rec in records:
                     if rec.get("preprocessing") == prep:
                         if rec.get("scaler") == "StandardScaler()":
-                            y_stand.append(rec.get("validation_accuracy"))
+                            y_stand.append(rec.get("validation_accuracy")/100)
                         elif rec.get("scaler") == "MinMaxScaler()":
-                            y_minmax.append(rec.get("validation_accuracy"))
+                            y_minmax.append(rec.get("validation_accuracy")/100)
 
         plt.scatter(x, y_stand, color="orange", label="S použitím PCA a štandardného škálovania")
         #plt.plot(x, y_stand, color="green", label="With PCA and standard scaler")
@@ -63,11 +63,11 @@ def create_pca_test_graphs():
         for rec in records:
             if rec.get("preprocessing") == prep:
                 if rec.get("scaler") == "StandardScaler()":
-                    plt.axhline(y=rec.get("validation_accuracy"), color='orange', linestyle='-', label="S použitím štandardného škálovania bez PCA")
+                    plt.axhline(y=rec.get("validation_accuracy")/100, color='orange', linestyle='-', label="S použitím štandardného škálovania bez PCA")
                 elif rec.get("scaler") == "MinMaxScaler()":
-                    plt.axhline(y=rec.get("validation_accuracy"), color='green', linestyle='-', label="S použitím min-max škálovania bez PCA")
+                    plt.axhline(y=rec.get("validation_accuracy")/100, color='green', linestyle='-', label="S použitím min-max škálovania bez PCA")
                 elif rec.get("scaler") == "None":
-                    plt.axhline(y=rec.get("validation_accuracy"), color='black', linestyle='-', label="Bez PCA a škálovania")
+                    plt.axhline(y=rec.get("validation_accuracy")/100, color='black', linestyle='-', label="Bez PCA a škálovania")
 
         plt.xticks(x, x)
         plt.tick_params(axis='x', labelsize=6)
