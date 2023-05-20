@@ -14,39 +14,41 @@ dataset_name = "leap"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+def log_and_train(stage, scaler, center_norm, pca):
+    log('-----Stage {}-----'.format(stage))
+    log('Evaluated preprocessing: (center-norm: "{}", scaler: "{}", pca: "{}")'
+        .format(center_norm, scaler, pca))
+
+    avg_accuracy = train(scaler=scaler, center_norm=center_norm, pca=pca)
+
+    log('')
+    log('-----------------------------------------------------------------------')
+    log('Training for stage {} complete!'.format(stage))
+    log('Evaluated preprocessing is: (center-norm: "{}", scaler: "{}", pca: "{}")'
+        .format(center_norm, scaler, pca))
+    log('Average accuracy is: {}'.format(avg_accuracy))
+    log('')
+    log('')
+    log('-----------------------------------------------------------------------')
+    log('-----------------------------------------------------------------------')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 def main():
     log.set_dataset_name(dataset_name)
 
     log('----------------Training initialized----------------')
     stage = 1
-    for pca in [PCA(n_components=12)
-        #PCA(n_components=8), PCA(n_components=5), PCA(n_components=4),
-                #PCA(n_components=2)
-                ]:
-        for scaler in [StandardScaler()
-                       #MinMaxScaler()
-                       ]:
-            for center_norm in [False
-                                #True
-                                ]:
-                        log('-----Stage {}-----'.format(stage))
-                        log('Evaluated preprocessing: (center-norm: "{}", scaler: "{}", pca: "{}")'
-                            .format(center_norm, scaler, pca))
-
-                        avg_accuracy = train(scaler=scaler, center_norm=center_norm, pca=pca)
-
-                        log('')
-                        log('-----------------------------------------------------------------------')
-                        log('Training for stage {} complete!'.format(stage))
-                        log('Evaluated preprocessing is: (center-norm: "{}", scaler: "{}", pca: "{}")'
-                            .format(center_norm, scaler, pca))
-                        log('Average accuracy is: {}'.format(avg_accuracy))
-                        log('')
-                        log('')
-                        log('-----------------------------------------------------------------------')
-                        log('-----------------------------------------------------------------------')
-
-                        stage += 1
+    for pca in [PCA(n_components=18), PCA(n_components=12), PCA(n_components=11), PCA(n_components=8), PCA(n_components=5), PCA(n_components=4), PCA(n_components=2)]:
+        for scaler in [StandardScaler(), MinMaxScaler()]:
+            for center_norm in [False, True]:
+                log_and_train(stage=stage, scaler=scaler, center_norm=center_norm, pca=pca)
+                stage += 1
+    pca = None
+    for scaler in [None, StandardScaler(), MinMaxScaler()]:
+        for center_norm in [False, True]:
+            log_and_train(stage=stage, scaler=scaler, center_norm=center_norm, pca=pca)
+            stage += 1
 
 
 # ----------------------------------------------------------------------------------------------------------------------
