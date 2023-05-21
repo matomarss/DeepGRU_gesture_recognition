@@ -15,7 +15,7 @@ The following files are runnable and were run in order to conduct the experiment
 3. results_parsing.py
 4. results_visualization.py
 
-In order for the above runnable files to work, it is necessary to download the following dataset and set its location path in leap_gestures.py accordingly:
+In order for the above runnable files to work, it is necessary to download the dataset that is provided as an electronic attachment to the thesis and set its location path in leap_gestures.py accordingly. It is also available at the following webpage:
 ```
 http://cogsci.dai.fmph.uniba.sk/~kocur/gestures/
 ```
